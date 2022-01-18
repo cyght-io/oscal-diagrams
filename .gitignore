@@ -1,0 +1,2 @@
+# Ignore pngs so diagrams are only updated from GitHub Actions and are not accidentally pushed manually.
+*.png
