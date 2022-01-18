@@ -1,0 +1,48 @@
+name: Generate Diagrams
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  generate-diagrams:
+    runs-on: ubuntu-latest
+    # Change default shell to execute in Conda enabled user environment.
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: latest
+      - name: Install erdantic
+        run: |
+          conda install -c conda-forge erdantic
+      - name: Install compliance-trestle
+        run: |
+          pip install compliance-trestle
+
+      # Since setup-miniconda run in an environment with a different user,
+      #   we need to change the folder permission so the files are accessible
+      #   from the Conda environment.
+      - name: Change file permission
+        shell: bash
+        run: |
+          chmod -R 777 .
+
+      - name: Generate diagrams
+        run: |
+          mkdir -p diagrams
+          ./generate_diagrams.sh
+
+      - name: Publish generated diagrams
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: "diagrams/* --force"
+          no_pull: true
